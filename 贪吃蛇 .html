@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .goal {
+            margin: 0 473px;
+            position: relative;
+        }
+
+        .iScore,
+        .mScore {
+            display: inline-block;
+            width: 110px;
+            height: 32px;
+            line-height: 32px;
+            background-color: orange;
+            border-radius: 20%;
+        }
+        
+        .cur,
+        .rec {
+            color: #eee;
+        }
+        .wrapper {
+            width: 400px;
+            height: 442px;
+            border: 1px solid rgb(177, 171, 171);
+            margin: 5px auto 0;
+        }
+        
+        table {
+            width: 400px;
+            height: 400px;
+            background-color: #eee;
+        }
+        tr {
+            width: 400px;
+            height: 20px;
+        }
+        td {
+            width:20px;
+            height:20px;  
+            background:#f4f4f4
+            }  
+        .btn {
+            display: block;
+            width: 100px;
+            height: 40px;
+            line-height: 25px;
+            background-color: orange;
+            color: #fff;
+            margin: 5px auto;
+        }
+        .snake {
+            background-color: black;
+        }
+        .food {
+            background-color: aqua;
+        }
+    </style>
+</head>
+<body>
+        <div class="goal">
+            <div class="iScore">分数：<span class = "cur">0</span></div>
+            <div class = "mScore">历史最高分：<span class="rec"></span></div>  
+        </div>
+          
+        <div class="wrapper">
+            <table class="otable"></table>
+        </div>   
+        <button class="btn">start</button>
+    <script src="./jquery-3.3.1.js "></script>
+    <script>
+        var width=20,
+            height=20,
+            len = 3,
+            snake = new Array(),
+            speed = 10,
+            aa,
+            bb,
+            snakeBody,
+            direction = 39,
+            score = 0,
+            lastscore = 0,
+            flag = false,
+            timer = null;
+        $('.btn').click(function () {
+            if (!flag) {
+                start();
+                flag = true;
+            }
+            
+        });
+        window.onload = function () {
+            initgame();
+            initfood();
+            initSnake();
+            $('.rec').html(window.name);
+        }
+        
+        function start() {
+            snakeBody = getTableArr(height,width);
+            
+            move();
+            document.onkeydown = function (e) {
+                var e = event || window.event;
+                direction =Math.abs(e.keyCode - direction) != 2 ? e.keyCode:direction;
+            }    
+        }
+        
+
+        function initgame() {
+        //    $('<tbody/>').appendTo($('table'));
+        //    for (var i = 0; i < height; i++) {
+        //         $('<tr/>').appendTo($('tbody'));
+        //         getArr[i] = $('tr');
+        //    }
+        //    for (var j = 0; j < width; j++) {
+        //         $('<td/>').appendTo($('tr'));
+        //         // getArr[i] = new Array();
+        //         getArr[i][j] = $('td');
+        //     }
+           
+        //    console.log(getArr[0][2]);
+        var tbody = document.createElement('tbody');
+        var table = document.getElementsByTagName('table')[0];
+			table.appendChild(tbody);
+			for(var i=0;i<height;i++){
+				var tr = document.createElement('tr');
+				tbody.appendChild(tr);
+				getTableArr[i] = tr;
+				for(var j=0;j<width;j++){
+					var td = document.createElement('td');
+					tr.appendChild(td);
+					getTableArr[i][j] = td;
+                }
+            }
+            $('table').append($('tbody'));
+        }
+
+        function initSnake() {
+            var _x = 1;
+            for (var i = 0; i < 3; i++) {
+                y = i;
+                snake.push([_x,y]);
+                getTableArr[y][_x].className = 'snake';
+            }
+        }
+
+        function initfood() {
+            var x = Math.floor(Math.random() * 20),
+                y = Math.floor(Math.random() * 20);
+                if ((x == 1) && ((y == 0)|| (y == 1) || (y == 2))) {
+                    x = x+1;
+                    y = y+3;
+                    getTableArr[y][x].className = "food";
+                }else {
+                    getTableArr[y][x].className = "food";
+                }
+                aa = x;
+                bb = y; 
+        }
+
+        function getTableArr (h, w) {
+            var arr = Array(h);
+            for (var i = 0; i < h; i++) {
+                arr[i] = new Array(w);
+            }
+            return arr;
+        }
+
+        function move () {
+            clearInterval(timer);
+            timer = setInterval(function () {
+                var snakeX = snake[len - 1][0],
+                    snakeY = snake[len - 1][1],
+                    lastX = snake[0][0],
+                    lastY = snake[0][1];
+                switch(direction){
+                    case 37: snakeX -=	1;	break;
+                    case 39: snakeX +=	1;	break;
+                    case 38: snakeY -=	1;	break;
+                    case 40: snakeY +=	1;	break;
+                }
+                
+                if (snakeX >= width || snakeY >= height || snakeX < 0 || snakeY < 0 || snakeBody[snakeY][snakeX] == 'snake') {
+                    window.name = lastscore;
+                    console.log(window.name);
+                    if ($('.cur').text() > window.name) {
+                        $('.rec').html($('.cur').text());
+                        lastscore = score;
+                        window.name = lastscore;
+                    }
+                    alert('game over');
+                    window.location.reload();
+                    console.log(score);
+                    console.log(window.name)
+                    clearInterval(timer);
+                    flag = false;
+                }
+                if (snakeX == aa && snakeY == bb) {
+                    initfood();
+                    snake.push([snakeX,snakeY]);
+                    len = snake.length;
+                    snakeBody[lastY][lastX] = '';
+                    score += 1;
+                    $('.cur').html(score);
+                }else{
+                    snake.push([snakeX,snakeY]);
+                    snake.shift([snakeX,snakeY]);
+                    getTableArr[lastY][lastX].className = '';
+                    snakeBody[lastY][lastX] = '';
+                }
+                getTableArr[snakeY][snakeX].className = 'snake';
+                snakeBody[snakeY][snakeX] = 'snake';
+                
+                    
+            },Math.floor(3000 / speed))
+                
+        }
+
+        
+        
+        
+    </script>
+ 
+</body>
+</html>
